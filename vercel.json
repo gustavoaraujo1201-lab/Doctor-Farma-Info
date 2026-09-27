@@ -6,7 +6,13 @@
     { "source": "/login",         "destination": "/pages/login.html" },
     { "source": "/registro",      "destination": "/pages/registro.html" },
     { "source": "/recuperar",     "destination": "/pages/recuperar.html" },
-    { "source": "/dashboard",     "destination": "/index.html" },
+    { "source": "/home",                 "destination": "/pages/home.html" },
+    { "source": "/medicamentos",         "destination": "/pages/medicamentos.html" },
+    { "source": "/legislacao",           "destination": "/pages/legislacao.html" },
+    { "source": "/varejo",               "destination": "/pages/varejo.html" },
+    { "source": "/atencao-farmaceutica", "destination": "/pages/atencao-farmaceutica.html" },
+    { "source": "/noticias",             "destination": "/pages/noticias.html" },
+    { "source": "/sobre",                "destination": "/pages/sobre.html" },
     { "source": "/",              "destination": "/pages/login.html" }
   ]
 }
