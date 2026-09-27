@@ -55,8 +55,9 @@
     font-size: 34px; font-weight: 800; letter-spacing: -0.5px;
     line-height: 1.1;
 }
-.logo-text span:first-child { color: #fff; }
-.logo-text span:last-child  { color: #06b6d4; }
+.logo-text span:first-child { color: #ffffff; }
+.logo-text span:last-child  { color: #ffffff; }
+.logo-text span:nth-child(2) { color: #06b6d4; }
 .logo-sub {
     font-size: 11px; color: rgba(255,255,255,0.4);
     letter-spacing: 3px; text-transform: uppercase; margin-top: 3px;
