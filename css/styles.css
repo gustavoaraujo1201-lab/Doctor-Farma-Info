@@ -480,7 +480,7 @@ tbody td { padding: 13px 16px; color: var(--text); }
 /* ─── LEGISLAÇÃO ─────────────────────────────────────────── */
 .leg-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(4, minmax(260px, 1fr));
     gap: 24px;
 }
 .leg-group {
@@ -514,7 +514,7 @@ tbody td { padding: 13px 16px; color: var(--text); }
 /* ─── VAREJO ─────────────────────────────────────────────── */
 .varejo-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(3, minmax(300px, 1fr));
     gap: 20px;
 }
 .info-card {
@@ -557,7 +557,7 @@ tbody td { padding: 13px 16px; color: var(--text); }
 /* ─── ATENÇÃO FARMACÊUTICA ───────────────────────────────── */
 .atencao-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(3, minmax(300px, 1fr));
     gap: 20px;
 }
 .atencao-card {
