@@ -40,6 +40,8 @@ ul { list-style: none; }
 }
 
 .accent { color: var(--accent); }
+.accent2 { color: #ffffff; }
+
 
 /* ─── SCROLLBAR ─────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
