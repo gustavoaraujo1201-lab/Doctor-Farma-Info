@@ -30,6 +30,14 @@
         .page.active { display: block; }
         #page-inicio .hero { min-height: calc(100vh - 64px); }
         .page-inner { padding-top: 100px; padding-bottom: 60px; }
+
+        /* ── Rodapé sempre colado no fim da tela, mesmo em páginas curtas ── */
+        html, body { height: 100%; }
+        body { display: flex; flex-direction: column; min-height: 100vh; }
+        .page.active { flex: 1 0 auto; display: flex; flex-direction: column; }
+        .page.active > .page-inner,
+        #page-inicio.active { flex: 1 0 auto; }
+        footer { flex-shrink: 0; }
     </style>
 </head>
 <body>
