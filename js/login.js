@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionStorage.setItem('infofarma_user', data.usuario);
                 sessionStorage.setItem('infofarma_token', data.access_token);
                 sessionStorage.setItem('infofarma_expires', expiresAt);
-                window.location.href = '/dashboard';
+                window.location.href = '/home';
             } else {
                 showError(data.erro || 'E-mail ou senha incorretos.');
                 btn.disabled = false;
