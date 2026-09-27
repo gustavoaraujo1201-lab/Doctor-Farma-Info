@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Proteção de rota: verifica sessionStorage E valida o token no backend -->
+    <script>
+        (function () {
+            const token = sessionStorage.getItem('infofarma_token');
+            const user  = sessionStorage.getItem('infofarma_user');
+            if (!token || !user) { window.location.replace('/login'); return; }
+
+            fetch('/api/verify-session', { headers: { 'Authorization': 'Bearer ' + token } })
+                .then(res => { if (!res.ok) throw new Error('sessão inválida'); })
+                .catch(() => {
+                    sessionStorage.removeItem('infofarma_user');
+                    sessionStorage.removeItem('infofarma_token');
+                    sessionStorage.removeItem('infofarma_expires');
+                    window.location.replace('/login');
+                });
+        })();
+    </script>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Doctor-Farma Info · Atenção Farmacêutica</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        html, body { height: 100%; }
+        body { display: flex; flex-direction: column; min-height: 100vh; }
+        .page-main { flex: 1 0 auto; }
+        footer { flex-shrink: 0; }
+        .page-inner { padding-top: 100px; padding-bottom: 60px; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="/home" class="nav-logo"><span>Doctor-</span><span class="accent">Farma</span> Info</a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="/home" class="nav-tab">Início</a></li>
+                <li><a href="/medicamentos" class="nav-tab">Medicamentos</a></li>
+                <li><a href="/legislacao" class="nav-tab">Legislação</a></li>
+                <li><a href="/varejo" class="nav-tab">Varejo</a></li>
+                <li><a href="/atencao-farmaceutica" class="nav-tab active">Atenção Farmacêutica</a></li>
+                <li><a href="/noticias" class="nav-tab">Notícias</a></li>
+                <li><a href="/sobre" class="nav-tab">Sobre</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="#" class="btn-sair" onclick="sessionStorage.removeItem('infofarma_user'); sessionStorage.removeItem('infofarma_token'); sessionStorage.removeItem('infofarma_expires'); window.location.href='/login';"><i class='bx bx-log-out'></i> Sair</a>
+                <button class="nav-toggle" id="navToggle"><i class='bx bx-menu'></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="page-main page-inner container">
+        <div class="section-label">Atenção Farmacêutica</div>
+        <h2 class="section-title">Cuidado Centrado no Paciente</h2>
+        <p class="section-sub">Práticas clínicas e de orientação para o farmacêutico.</p>
+        <div class="atencao-grid">
+            <div class="atencao-card"><i class='bx bx-plus-medical'></i><h3>Farmácia Clínica</h3><p>Acompanhamento farmacoterapêutico individualizado, identificação de PRM (Problemas Relacionados a Medicamentos) e RNM.</p></div>
+            <div class="atencao-card"><i class='bx bx-conversation'></i><h3>Orientação ao Paciente</h3><p>Técnica teach-back, orientações sobre posologia, interações alimentares e armazenamento correto dos medicamentos.</p></div>
+            <div class="atencao-card"><i class='bx bx-test-tube'></i><h3>Serviços Clínicos</h3><p>Aferição de PA, glicemia capilar, IMC, circunferência abdominal e rastreamento de doenças crônicas (CFF 585/2013).</p></div>
+            <div class="atencao-card"><i class='bx bx-network-chart'></i><h3>Interações Medicamentosas</h3><p>Identificação de interações clinicamente relevantes, contraindicações e ajuste de dose em populações especiais.</p></div>
+            <div class="atencao-card"><i class='bx bx-calendar-check'></i><h3>Adesão ao Tratamento</h3><p>Escala de Morisky (MMAS-8), identificação de barreiras à adesão e estratégias de intervenção farmacêutica.</p></div>
+            <div class="atencao-card"><i class='bx bx-heart'></i><h3>Doenças Crônicas</h3><p>Protocolos para DM, HAS, dislipidemia e DPOC. Monitoramento de parâmetros clínicos e laboratoriais.</p></div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2026 Doctor-Farma Info · Dados: ANVISA, CFF, Ministério da Saúde · Desenvolvido para farmacêuticos brasileiros.</p>
+        </div>
+    </footer>
+
+    <script src="../js/navbar.js"></script>
+</body>
+</html>

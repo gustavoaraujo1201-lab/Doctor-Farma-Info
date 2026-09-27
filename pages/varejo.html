@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Proteção de rota: verifica sessionStorage E valida o token no backend -->
+    <script>
+        (function () {
+            const token = sessionStorage.getItem('infofarma_token');
+            const user  = sessionStorage.getItem('infofarma_user');
+            if (!token || !user) { window.location.replace('/login'); return; }
+
+            fetch('/api/verify-session', { headers: { 'Authorization': 'Bearer ' + token } })
+                .then(res => { if (!res.ok) throw new Error('sessão inválida'); })
+                .catch(() => {
+                    sessionStorage.removeItem('infofarma_user');
+                    sessionStorage.removeItem('infofarma_token');
+                    sessionStorage.removeItem('infofarma_expires');
+                    window.location.replace('/login');
+                });
+        })();
+    </script>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Doctor-Farma Info · Varejo</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        html, body { height: 100%; }
+        body { display: flex; flex-direction: column; min-height: 100vh; }
+        .page-main { flex: 1 0 auto; }
+        footer { flex-shrink: 0; }
+        .page-inner { padding-top: 100px; padding-bottom: 60px; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="/home" class="nav-logo"><span>Doctor-</span><span class="accent">Farma</span> Info</a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="/home" class="nav-tab">Início</a></li>
+                <li><a href="/medicamentos" class="nav-tab">Medicamentos</a></li>
+                <li><a href="/legislacao" class="nav-tab">Legislação</a></li>
+                <li><a href="/varejo" class="nav-tab active">Varejo</a></li>
+                <li><a href="/atencao-farmaceutica" class="nav-tab">Atenção Farmacêutica</a></li>
+                <li><a href="/noticias" class="nav-tab">Notícias</a></li>
+                <li><a href="/sobre" class="nav-tab">Sobre</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="#" class="btn-sair" onclick="sessionStorage.removeItem('infofarma_user'); sessionStorage.removeItem('infofarma_token'); sessionStorage.removeItem('infofarma_expires'); window.location.href='/login';"><i class='bx bx-log-out'></i> Sair</a>
+                <button class="nav-toggle" id="navToggle"><i class='bx bx-menu'></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="page-main page-inner container">
+        <div class="section-label">Gestão de Varejo</div>
+        <h2 class="section-title">Ferramentas para Farmácias</h2>
+        <p class="section-sub">Informações práticas para gestão eficiente de farmácias e drogarias.</p>
+        <div class="varejo-grid">
+            <div class="info-card"><div class="info-icon"><i class='bx bx-package'></i></div><h3>Controle de Estoque</h3><ul><li>PEPS (Primeiro que Entra, Primeiro que Sai)</li><li>Monitoramento de validade e lotes</li><li>Ponto de ressuprimento automático</li><li>Inventário periódico e rotativo</li><li>Gestão de devoluções e avarias</li></ul></div>
+            <div class="info-card"><div class="info-icon"><i class='bx bx-dollar-circle'></i></div><h3>Precificação</h3><ul><li>CMED — Câmara de Regulação do Mercado</li><li>PMC (Preço Máximo ao Consumidor)</li><li>Markup e margem de contribuição</li><li>Desconto máximo regulamentado</li><li>Produtos sujeitos a tabelamento</li></ul></div>
+            <div class="info-card"><div class="info-icon"><i class='bx bx-bar-chart-alt-2'></i></div><h3>KPIs da Farmácia</h3><ul><li>Ticket médio por atendimento</li><li>Taxa de conversão de prescrições</li><li>Giro de estoque mensal</li><li>Índice de ruptura de estoque</li><li>Satisfação do cliente (NPS)</li></ul></div>
+            <div class="info-card"><div class="info-icon"><i class='bx bx-check-shield'></i></div><h3>Compliance Regulatório</h3><ul><li>Escrituração de controlados (SNGPC)</li><li>Notificações ao NOTIVISA</li><li>Farmacêutico responsável técnico obrigatório</li><li>Segregação de medicamentos por tarja</li><li>Descarte correto de medicamentos vencidos</li></ul></div>
+            <div class="info-card"><div class="info-icon"><i class='bx bx-user-voice'></i></div><h3>Gestão de Equipe</h3><ul><li>Treinamento em atendimento farmacêutico</li><li>Capacitação em primeiros socorros</li><li>Protocolos de dispensação segura</li><li>Gestão de escalas e jornada</li><li>Avaliação de desempenho periódica</li></ul></div>
+            <div class="info-card"><div class="info-icon"><i class='bx bx-receipt'></i></div><h3>Receituários</h3><ul><li>Receita Branca Simples (2 vias)</li><li>Receita de Controle Especial (notificação)</li><li>Receita Azul — psicotrópicos</li><li>Receita Amarela — entorpecentes</li><li>Prescrição eletrônica — validade</li></ul></div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2026 Doctor-Farma Info · Dados: ANVISA, CFF, Ministério da Saúde · Desenvolvido para farmacêuticos brasileiros.</p>
+        </div>
+    </footer>
+
+    <script src="../js/navbar.js"></script>
+</body>
+</html>

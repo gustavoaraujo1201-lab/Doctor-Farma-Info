@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Proteção de rota: verifica sessionStorage E valida o token no backend -->
+    <script>
+        (function () {
+            const token = sessionStorage.getItem('infofarma_token');
+            const user  = sessionStorage.getItem('infofarma_user');
+            if (!token || !user) { window.location.replace('/login'); return; }
+
+            fetch('/api/verify-session', { headers: { 'Authorization': 'Bearer ' + token } })
+                .then(res => { if (!res.ok) throw new Error('sessão inválida'); })
+                .catch(() => {
+                    sessionStorage.removeItem('infofarma_user');
+                    sessionStorage.removeItem('infofarma_token');
+                    sessionStorage.removeItem('infofarma_expires');
+                    window.location.replace('/login');
+                });
+        })();
+    </script>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Doctor-Farma Info · Sobre</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        html, body { height: 100%; }
+        body { display: flex; flex-direction: column; min-height: 100vh; }
+        .page-main { flex: 1 0 auto; }
+        footer { flex-shrink: 0; }
+        .page-inner { padding-top: 100px; padding-bottom: 60px; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="/home" class="nav-logo"><span>Doctor-</span><span class="accent">Farma</span> Info</a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="/home" class="nav-tab">Início</a></li>
+                <li><a href="/medicamentos" class="nav-tab">Medicamentos</a></li>
+                <li><a href="/legislacao" class="nav-tab">Legislação</a></li>
+                <li><a href="/varejo" class="nav-tab">Varejo</a></li>
+                <li><a href="/atencao-farmaceutica" class="nav-tab">Atenção Farmacêutica</a></li>
+                <li><a href="/noticias" class="nav-tab">Notícias</a></li>
+                <li><a href="/sobre" class="nav-tab active">Sobre</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="#" class="btn-sair" onclick="sessionStorage.removeItem('infofarma_user'); sessionStorage.removeItem('infofarma_token'); sessionStorage.removeItem('infofarma_expires'); window.location.href='/login';"><i class='bx bx-log-out'></i> Sair</a>
+                <button class="nav-toggle" id="navToggle"><i class='bx bx-menu'></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="page-main page-inner container">
+        <div class="section-label">Sobre</div>
+        <h2 class="section-title">Sobre a Doctor-Farma Info</h2>
+        <div class="sobre-grid">
+            <div class="sobre-text">
+                <h3>Nossa Missão</h3>
+                <p>A Doctor-Farma Info nasceu da necessidade de centralizar informações confiáveis para farmacêuticos e balconistas brasileiros. Reunimos dados da ANVISA, CFF e Ministério da Saúde em um único portal de fácil acesso.</p>
+                <h3 style="margin-top:24px">Fontes de Dados</h3>
+                <ul class="sobre-list">
+                    <li><i class='bx bx-check-circle'></i> ANVISA — Agência Nacional de Vigilância Sanitária</li>
+                    <li><i class='bx bx-check-circle'></i> CFF — Conselho Federal de Farmácia</li>
+                    <li><i class='bx bx-check-circle'></i> Ministério da Saúde</li>
+                    <li><i class='bx bx-check-circle'></i> CMED — Câmara de Regulação do Mercado</li>
+                    <li><i class='bx bx-check-circle'></i> Publicações científicas revisadas por pares</li>
+                </ul>
+            </div>
+            <div class="sobre-stats">
+                <div class="sobre-stat"><span>143</span><p>Medicamentos na base</p></div>
+                <div class="sobre-stat"><span>25+</span><p>Normas catalogadas</p></div>
+                <div class="sobre-stat"><span>6</span><p>Seções de conteúdo</p></div>
+                <div class="sobre-stat"><span>2026</span><p>Dados atualizados</p></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2026 Doctor-Farma Info · Dados: ANVISA, CFF, Ministério da Saúde · Desenvolvido para farmacêuticos brasileiros.</p>
+        </div>
+    </footer>
+
+    <script src="../js/navbar.js"></script>
+</body>
+</html>

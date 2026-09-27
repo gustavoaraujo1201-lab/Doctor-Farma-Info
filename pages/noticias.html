@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Proteção de rota: verifica sessionStorage E valida o token no backend -->
+    <script>
+        (function () {
+            const token = sessionStorage.getItem('infofarma_token');
+            const user  = sessionStorage.getItem('infofarma_user');
+            if (!token || !user) { window.location.replace('/login'); return; }
+
+            fetch('/api/verify-session', { headers: { 'Authorization': 'Bearer ' + token } })
+                .then(res => { if (!res.ok) throw new Error('sessão inválida'); })
+                .catch(() => {
+                    sessionStorage.removeItem('infofarma_user');
+                    sessionStorage.removeItem('infofarma_token');
+                    sessionStorage.removeItem('infofarma_expires');
+                    window.location.replace('/login');
+                });
+        })();
+    </script>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Doctor-Farma Info · Notícias</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        html, body { height: 100%; }
+        body { display: flex; flex-direction: column; min-height: 100vh; }
+        .page-main { flex: 1 0 auto; }
+        footer { flex-shrink: 0; }
+        .page-inner { padding-top: 100px; padding-bottom: 60px; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="/home" class="nav-logo"><span>Doctor-</span><span class="accent">Farma</span> Info</a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="/home" class="nav-tab">Início</a></li>
+                <li><a href="/medicamentos" class="nav-tab">Medicamentos</a></li>
+                <li><a href="/legislacao" class="nav-tab">Legislação</a></li>
+                <li><a href="/varejo" class="nav-tab">Varejo</a></li>
+                <li><a href="/atencao-farmaceutica" class="nav-tab">Atenção Farmacêutica</a></li>
+                <li><a href="/noticias" class="nav-tab active">Notícias</a></li>
+                <li><a href="/sobre" class="nav-tab">Sobre</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="#" class="btn-sair" onclick="sessionStorage.removeItem('infofarma_user'); sessionStorage.removeItem('infofarma_token'); sessionStorage.removeItem('infofarma_expires'); window.location.href='/login';"><i class='bx bx-log-out'></i> Sair</a>
+                <button class="nav-toggle" id="navToggle"><i class='bx bx-menu'></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="page-main page-inner container">
+        <div class="section-label">Notícias do Setor</div>
+        <h2 class="section-title">Atualizações Recentes</h2>
+        <p class="section-sub">Últimas novidades do mercado farmacêutico e regulatório brasileiro.</p>
+        <div class="news-grid">
+            <div class="news-card featured"><div class="news-tag anvisa">ANVISA</div><h3>ANVISA publica nova lista de medicamentos genéricos aprovados em 2026</h3><p>A agência atualizou o banco de dados com mais de 40 novos registros nas categorias cardiovascular e antibióticos.</p><div class="news-meta"><i class='bx bx-calendar'></i> Maio 2026</div></div>
+            <div class="news-card"><div class="news-tag cff">CFF</div><h3>CFF reforça papel do farmacêutico no cuidado primário</h3><p>Resolução amplia atribuições clínicas na atenção básica.</p><div class="news-meta"><i class='bx bx-calendar'></i> Abril 2026</div></div>
+            <div class="news-card"><div class="news-tag ms">Min. Saúde</div><h3>Farmácia Popular amplia lista de medicamentos gratuitos</h3><p>Novos itens incluídos para hipertensão e diabetes em 2026.</p><div class="news-meta"><i class='bx bx-calendar'></i> Março 2026</div></div>
+            <div class="news-card"><div class="news-tag pesquisa">Pesquisa</div><h3>Estudo aponta aumento de resistência bacteriana no Brasil</h3><p>Uso racional de antibióticos é tema central de campanhas nacionais em 2026.</p><div class="news-meta"><i class='bx bx-calendar'></i> Fevereiro 2026</div></div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2026 Doctor-Farma Info · Dados: ANVISA, CFF, Ministério da Saúde · Desenvolvido para farmacêuticos brasileiros.</p>
+        </div>
+    </footer>
+
+    <script src="../js/navbar.js"></script>
+</body>
+</html>

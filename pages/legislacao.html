@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Proteção de rota: verifica sessionStorage E valida o token no backend -->
+    <script>
+        (function () {
+            const token = sessionStorage.getItem('infofarma_token');
+            const user  = sessionStorage.getItem('infofarma_user');
+            if (!token || !user) { window.location.replace('/login'); return; }
+
+            fetch('/api/verify-session', { headers: { 'Authorization': 'Bearer ' + token } })
+                .then(res => { if (!res.ok) throw new Error('sessão inválida'); })
+                .catch(() => {
+                    sessionStorage.removeItem('infofarma_user');
+                    sessionStorage.removeItem('infofarma_token');
+                    sessionStorage.removeItem('infofarma_expires');
+                    window.location.replace('/login');
+                });
+        })();
+    </script>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Doctor-Farma Info · Legislação</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        html, body { height: 100%; }
+        body { display: flex; flex-direction: column; min-height: 100vh; }
+        .page-main { flex: 1 0 auto; }
+        footer { flex-shrink: 0; }
+        .page-inner { padding-top: 100px; padding-bottom: 60px; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="/home" class="nav-logo"><span>Doctor-</span><span class="accent">Farma</span> Info</a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="/home" class="nav-tab">Início</a></li>
+                <li><a href="/medicamentos" class="nav-tab">Medicamentos</a></li>
+                <li><a href="/legislacao" class="nav-tab active">Legislação</a></li>
+                <li><a href="/varejo" class="nav-tab">Varejo</a></li>
+                <li><a href="/atencao-farmaceutica" class="nav-tab">Atenção Farmacêutica</a></li>
+                <li><a href="/noticias" class="nav-tab">Notícias</a></li>
+                <li><a href="/sobre" class="nav-tab">Sobre</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="#" class="btn-sair" onclick="sessionStorage.removeItem('infofarma_user'); sessionStorage.removeItem('infofarma_token'); sessionStorage.removeItem('infofarma_expires'); window.location.href='/login';"><i class='bx bx-log-out'></i> Sair</a>
+                <button class="nav-toggle" id="navToggle"><i class='bx bx-menu'></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="page-main page-inner container">
+        <div class="section-label">Legislação</div>
+        <h2 class="section-title">Normas e Regulamentos</h2>
+        <p class="section-sub">Principais leis, portarias, RDCs e resoluções do setor farmacêutico brasileiro.</p>
+        <div class="leg-grid">
+            <div class="leg-group">
+                <div class="leg-group-title"><i class='bx bx-building'></i> Leis Federais</div>
+                <div class="leg-item"><strong>Lei 5.991/73</strong><p>Dispõe sobre o controle sanitário do comércio de drogas, medicamentos, insumos farmacêuticos e correlatos.</p></div>
+                <div class="leg-item"><strong>Lei 9.787/99</strong><p>Estabelece o medicamento genérico e dispõe sobre a utilização de nomes genéricos em produtos farmacêuticos.</p></div>
+                <div class="leg-item"><strong>Lei 13.021/14</strong><p>Dispõe sobre o exercício e a fiscalização das atividades farmacêuticas.</p></div>
+            </div>
+            <div class="leg-group">
+                <div class="leg-group-title"><i class='bx bx-shield-alt-2'></i> ANVISA — RDCs</div>
+                <div class="leg-item"><strong>RDC 44/2009</strong><p>Regulamento técnico para o funcionamento de farmácias e drogarias.</p></div>
+                <div class="leg-item"><strong>RDC 222/2017</strong><p>Regulamenta as Boas Práticas de Gerenciamento de Resíduos de Serviços de Saúde.</p></div>
+                <div class="leg-item"><strong>RDC 586/2021</strong><p>Regula a prescrição farmacêutica em serviços de saúde e farmácias.</p></div>
+                <div class="leg-item"><strong>RDC 780/2023</strong><p>Dispõe sobre as condições para o funcionamento de farmácias no Brasil.</p></div>
+            </div>
+            <div class="leg-group">
+                <div class="leg-group-title"><i class='bx bx-file'></i> Portarias</div>
+                <div class="leg-item"><strong>Portaria 344/98 — SVS/MS</strong><p>Aprova o Regulamento Técnico sobre substâncias e medicamentos sujeitos a controle especial.</p></div>
+                <div class="leg-item"><strong>Portaria 2.488/2011</strong><p>Aprova a Política Nacional de Atenção Básica, incluindo o papel do farmacêutico.</p></div>
+            </div>
+            <div class="leg-group">
+                <div class="leg-group-title"><i class='bx bx-group'></i> CFF — Resoluções</div>
+                <div class="leg-item"><strong>Resolução CFF 585/2013</strong><p>Regulamenta as atribuições clínicas do farmacêutico e dá outras providências.</p></div>
+                <div class="leg-item"><strong>Resolução CFF 586/2013</strong><p>Regula a prescrição farmacêutica e dá outras providências.</p></div>
+                <div class="leg-item"><strong>Resolução CFF 596/2014</strong><p>Dispõe sobre o Código de Ética Farmacêutica.</p></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2026 Doctor-Farma Info · Dados: ANVISA, CFF, Ministério da Saúde · Desenvolvido para farmacêuticos brasileiros.</p>
+        </div>
+    </footer>
+
+    <script src="../js/navbar.js"></script>
+</body>
+</html>
