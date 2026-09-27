@@ -1,10 +1,12 @@
 // api/registro.js — Vercel Serverless Function
-// Usa Supabase Auth: senhas criptografadas com bcrypt, sessão JWT segura
+// Cadastro via Firebase Authentication. O Firebase não tem conceito nativo
+// de "username único", então usamos uma única coleção Firestore mínima
+// (usernames/{usernameLower} -> uid) só para essa checagem — nada além disso
+// foi movido para o Firestore.
 
-const SUPABASE_URL = process.env.SUPABASE_URL || '';
-const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY || '';
+import { requireApiKey, db, adminAuth } from './_lib/firebase-admin.js';
+import { mensagemAmigavel } from './_lib/firebase-errors.js';
 
-// ─── Palavras proibidas no nome de usuário ───────────────────
 const PALAVRAS_PROIBIDAS = [
     'puta','puto','merda','bosta','corno','corna','viado','viadão',
     'buceta','boceta','xoxota','xereca','piroca','pau','rola','pinto',
@@ -23,7 +25,6 @@ function contemPalavraProibida(texto) {
     return PALAVRAS_PROIBIDAS.some(p => t.includes(p));
 }
 
-// ─── Rate Limiting em memória ────────────────────────────────
 const attempts = new Map();
 function isRateLimited(ip) {
     const now = Date.now();
@@ -37,7 +38,6 @@ function isRateLimited(ip) {
     return false;
 }
 
-// ─── Headers de segurança HTTP ───────────────────────────────
 function setSecurityHeaders(res) {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
@@ -55,15 +55,14 @@ export default async function handler(req, res) {
     if (isRateLimited(ip)) return res.status(429).json({ erro: 'Muitas tentativas. Aguarde 15 minutos.' });
 
     const { email, username, password } = req.body || {};
-
     if (!email || !username || !password)
         return res.status(400).json({ erro: 'Preencha todos os campos.' });
 
     const emailClean    = String(email).trim().toLowerCase().slice(0, 254);
     const usernameClean = String(username).trim().slice(0, 30);
+    const usernameKey    = usernameClean.toLowerCase();
     const passwordRaw   = String(password);
 
-    // ─── Validações rápidas (sem rede) ───────────────────────
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailClean))
         return res.status(400).json({ erro: 'E-mail inválido.' });
     if (usernameClean.length < 3)
@@ -78,54 +77,42 @@ export default async function handler(req, res) {
         return res.status(400).json({ erro: 'Senha muito longa.' });
 
     try {
-        // ✅ Verifica username e cria conta em paralelo não é possível pois precisamos
-        // do resultado do check antes — mas fazemos signup e insert de perfil em paralelo
-        // ─── Verifica se username já existe ──────────────────
-        const checkRes = await fetch(
-            `${SUPABASE_URL}/rest/v1/perfis?username=ilike.${encodeURIComponent(usernameClean)}&select=id`,
-            { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
-        );
-        const userData = await checkRes.json();
-        if (Array.isArray(userData) && userData.length > 0)
+        const apiKey = requireApiKey();
+
+        // ─── Verifica se o username já existe (Firestore) ────────────
+        const usernameDoc = await db.collection('usernames').doc(usernameKey).get();
+        if (usernameDoc.exists)
             return res.status(409).json({ erro: 'Este nome de usuário já está em uso.' });
 
-        // ─── Cria no Supabase Auth ────────────────────────────
-        const signUpRes = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
-            method: 'POST',
-            headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                email: emailClean,
-                password: passwordRaw,
-                data: { username: usernameClean, full_name: usernameClean }
-            })
-        });
-
+        // ─── Cria a conta no Firebase Auth ───────────────────────────
+        const signUpRes = await fetch(
+            `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: emailClean, password: passwordRaw, returnSecureToken: true })
+            }
+        );
         const signUpData = await signUpRes.json();
 
         if (!signUpRes.ok) {
-            if (signUpData?.code === 'user_already_exists' || signUpData?.message?.toLowerCase().includes('already registered'))
-                return res.status(409).json({ erro: 'Este e-mail já está cadastrado.' });
-            return res.status(400).json({ erro: 'Erro ao criar conta. Tente novamente.' });
+            return res.status(signUpData?.error?.message === 'EMAIL_EXISTS' ? 409 : 400)
+                .json({ erro: mensagemAmigavel(signUpData?.error?.message) });
         }
 
-        // ✅ Salva perfil sem aguardar (fire-and-forget) — não bloqueia a resposta
-        if (signUpData?.user?.id) {
-            fetch(`${SUPABASE_URL}/rest/v1/perfis`, {
-                method: 'POST',
-                headers: {
-                    'apikey': SUPABASE_KEY,
-                    'Authorization': `Bearer ${SUPABASE_KEY}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'return=minimal'
-                },
-                body: JSON.stringify({ id: signUpData.user.id, username: usernameClean, email: emailClean })
-            }); // ← sem await: responde ao usuário imediatamente
-        }
+        const uid = signUpData.localId;
+
+        // ─── Salva o displayName (username) na conta ─────────────────
+        await adminAuth.updateUser(uid, { displayName: usernameClean });
+
+        // ─── Reserva o username no Firestore (fire-and-forget, como antes) ───
+        db.collection('usernames').doc(usernameKey).set({ uid, email: emailClean })
+            .catch(e => console.error('Erro ao reservar username:', e.message));
 
         return res.json({ sucesso: true, usuario: usernameClean });
 
     } catch (err) {
-        console.error('Erro no registro:', err);
+        console.error('Erro no registro:', err.message);
         return res.status(500).json({ erro: 'Erro interno do servidor.' });
     }
 }

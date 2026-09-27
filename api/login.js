@@ -1,10 +1,10 @@
 // api/login.js — Vercel Serverless Function
-// Login direto por e-mail — 1 requisição só, sem busca extra
+// Login via Firebase Authentication (Identity Toolkit REST API)
 
-const SUPABASE_URL = process.env.SUPABASE_URL || '';
-const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY || '';
+import { requireApiKey } from './_lib/firebase-admin.js';
+import { mensagemAmigavel } from './_lib/firebase-errors.js';
 
-// ─── Rate Limiting em memória ────────────────────────────────
+// ─── Rate Limiting em memória (preservado — ver observação no relatório) ───
 const attempts = new Map();
 function isRateLimited(ip) {
     const now = Date.now();
@@ -35,7 +35,6 @@ export default async function handler(req, res) {
     if (isRateLimited(ip)) return res.status(429).json({ erro: 'Muitas tentativas. Aguarde 15 minutos.' });
 
     const { email, password } = req.body || {};
-
     if (!email || !password) return res.status(400).json({ erro: 'Preencha o e-mail e a senha.' });
 
     const emailClean  = String(email).trim().toLowerCase().slice(0, 254);
@@ -45,31 +44,34 @@ export default async function handler(req, res) {
         return res.status(400).json({ erro: 'E-mail inválido.' });
 
     try {
-        // ─── Uma única requisição ao Supabase Auth ───────────
-        const authRes = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-            method: 'POST',
-            headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: emailClean, password: passwordRaw })
-        });
+        const apiKey = requireApiKey();
 
+        const authRes = await fetch(
+            `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: emailClean, password: passwordRaw, returnSecureToken: true })
+            }
+        );
         const authData = await authRes.json();
 
         if (!authRes.ok) {
-            return res.status(401).json({ erro: 'E-mail ou senha incorretos.' });
+            return res.status(401).json({ erro: mensagemAmigavel(authData?.error?.message) });
         }
 
-        // Username vem do user_metadata salvo no registro
-        const username = authData?.user?.user_metadata?.username || emailClean.split('@')[0];
+        // O displayName foi salvo no registro (accounts:update) — é o username.
+        const username = authData.displayName || emailClean.split('@')[0];
 
         return res.json({
             sucesso: true,
             usuario: username,
-            access_token: authData.access_token,
-            expires_in: authData.expires_in
+            access_token: authData.idToken,
+            expires_in: Number(authData.expiresIn) // Identity Toolkit retorna em segundos, como string
         });
 
     } catch (err) {
-        console.error('Erro no login:', err);
+        console.error('Erro no login:', err.message);
         return res.status(500).json({ erro: 'Erro interno do servidor.' });
     }
 }

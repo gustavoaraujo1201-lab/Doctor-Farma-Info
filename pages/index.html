@@ -3,11 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Proteção de rota: redireciona para login se não estiver autenticado -->
+    <!-- Proteção de rota: verifica sessionStorage E valida o token no backend -->
     <script>
-        if (!sessionStorage.getItem('infofarma_user')) {
-            window.location.replace('/login');
-        }
+        (function () {
+            const token = sessionStorage.getItem('infofarma_token');
+            const user  = sessionStorage.getItem('infofarma_user');
+            if (!token || !user) { window.location.replace('/login'); return; }
+
+            fetch('/api/verify-session', { headers: { 'Authorization': 'Bearer ' + token } })
+                .then(res => { if (!res.ok) throw new Error('sessão inválida'); })
+                .catch(() => {
+                    sessionStorage.removeItem('infofarma_user');
+                    sessionStorage.removeItem('infofarma_token');
+                    sessionStorage.removeItem('infofarma_expires');
+                    window.location.replace('/login');
+                });
+        })();
     </script>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="preconnect" href="https://fonts.googleapis.com">

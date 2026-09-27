@@ -1,10 +1,8 @@
 // api/recuperar.js — Vercel Serverless Function
-// Dispara e-mail de recuperação de senha via Supabase Auth
+// Dispara e-mail de recuperação de senha via Firebase Authentication
 
-const SUPABASE_URL = process.env.SUPABASE_URL || '';
-const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY || '';
+import { requireApiKey } from './_lib/firebase-admin.js';
 
-// ─── Rate Limiting ────────────────────────────────────────────
 const attempts = new Map();
 function isRateLimited(ip) {
     const now = Date.now();
@@ -41,22 +39,24 @@ export default async function handler(req, res) {
         return res.status(400).json({ erro: 'E-mail inválido.' });
 
     try {
-        // Dispara o e-mail de recuperação via Supabase Auth
-        // Por segurança, sempre retorna sucesso (evita enumeração de e-mails)
-        await fetch(`${SUPABASE_URL}/auth/v1/recover`, {
-            method: 'POST',
-            headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                email: emailClean,
-                redirect_to: 'https://infofarma.vercel.app/dashboard'
-            })
-        });
+        const apiKey = requireApiKey();
 
-        // Sempre retorna sucesso — não revela se o e-mail existe ou não
+        await fetch(
+            `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${apiKey}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ requestType: 'PASSWORD_RESET', email: emailClean })
+            }
+        );
+
+        // Sempre retorna sucesso — mesmo se a Identity Toolkit responder
+        // EMAIL_NOT_FOUND. Isso evita enumeração de e-mails, exatamente
+        // como o comportamento anterior com o Supabase.
         return res.json({ sucesso: true });
 
     } catch (err) {
-        console.error('Erro na recuperação:', err);
+        console.error('Erro na recuperação:', err.message);
         return res.status(500).json({ erro: 'Erro interno do servidor.' });
     }
 }
