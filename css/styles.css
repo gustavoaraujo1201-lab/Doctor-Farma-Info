@@ -733,6 +733,7 @@ footer p { font-size: 12px; color: var(--muted); }
 #medTable {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed; /* largura fixa proporcional */
 }
 
 /* Cabeçalhos: nunca quebram no meio */
